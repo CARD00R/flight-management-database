@@ -75,13 +75,15 @@ cur.executemany(
     "VALUES (?, ?, ?)", aircraft
 )
 
-# Store IDs created
-dest_ids = [r[0] for r in cur.execute(
-    "SELECT destinationID FROM Destination ORDER BY destinationID").fetchall()]
-aircraft_ids = [r[0] for r in cur.execute(
-    "SELECT aircraftID FROM Aircraft ORDER BY aircraftID").fetchall()]
-pilot_ids = [r[0] for r in cur.execute(
-    "SELECT pilotID FROM Pilot ORDER BY pilotID").fetchall()]
+# Unwrap and store IDs created
+dest_rows = cur.execute("SELECT destinationID FROM Destination ORDER BY destinationID").fetchall()
+dest_ids = [r[0] for r in dest_rows]
+
+aircraft_rows = cur.execute("SELECT aircraftID FROM Aircraft ORDER BY aircraftID").fetchall()
+aircraft_ids = [r[0] for r in aircraft_rows]
+
+pilot_rows = cur.execute("SELECT pilotID FROM Pilot ORDER BY pilotID").fetchall()
+pilot_ids = [r[0] for r in pilot_rows]
 
 #Flights
 flights = [
@@ -105,8 +107,8 @@ for fn, dep, arr, status, di, ai in flights:
         (fn, dep, arr, status, dest_ids[di], aircraft_ids[ai])
     )
 
-flight_ids = [r[0] for r in cur.execute(
-    "SELECT flightID FROM Flight ORDER BY flightID").fetchall()]
+flight_rows = cur.execute("SELECT flightID FROM Flight ORDER BY flightID").fetchall()
+flight_ids = [r[0] for r in flight_rows]
 
 # FlightCrew (each flight must have one Captain and one a First Officer)
 captains = [0, 1, 2, 3, 8, 10]
