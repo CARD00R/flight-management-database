@@ -173,8 +173,96 @@ def view_flights(conn):
     print_flights(rows)
 
 def update_flight(conn):
-    """Update Flight Information (such as departure time or status)."""
-    print("[update_flight] not implemeted yet")
+    """Update Flight Information (departure time, status, or aircraft)."""
+
+    clear_screen()
+    print("Update flight information\n")
+
+    # Get ALL flights and information with ID
+    flights = conn.execute("""
+        SELECT flightID, flightNumber, departureTime, arrivalTime, status, city, model
+        FROM Flight
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        JOIN Aircraft    ON Flight.aircraftID    = Aircraft.aircraftID
+        ORDER BY flightID
+    """).fetchall()
+    
+    # Print ALL flights and information with ID
+    for flight in flights:
+        print(f"\n{flight['flightID']}. {flight['flightNumber']} | {flight['status']}")
+        print(f"   Departs: {flight['departureTime']:<20} | Aircraft: {flight['model']}")
+        print(f"   Arrives: {flight['arrivalTime']:<20} | To: {flight['city']}")
+
+    # Ask which flight to update
+    flight_id = input("\nEnter the flight ID to update: ").strip()
+    if conn.execute("SELECT 1 FROM Flight WHERE flightID = ?", (flight_id,)).fetchone() is None:
+        print("No flight with that ID.")
+        return
+    
+    clear_screen()
+    # Print the selected flight's details
+    clear_screen()
+    flight = conn.execute("""
+        SELECT flightID, flightNumber, departureTime, arrivalTime, status, city, model
+        FROM Flight
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        JOIN Aircraft    ON Flight.aircraftID    = Aircraft.aircraftID
+        WHERE flightID = ?
+    """, (flight_id,)).fetchone()
+
+    print("Selected flight:\n")
+    print(f"{flight['flightID']}. {flight['flightNumber']} | {flight['status']}")
+    print(f"   Departs: {flight['departureTime']:<20} | Aircraft: {flight['model']}")
+    print(f"   Arrives: {flight['arrivalTime']:<20} | To: {flight['city']}")
+    
+    # Update Flight: Sub-menu
+    print("\nWhat would you like to update?")
+    print("  1. Departure time")
+    print("  2. Status")
+    print("  3. Aircraft")
+    choice = input("\nSelect an option (1-3): ").strip()
+
+    # Departure-time input loop
+    if choice == "1":
+        while True:
+            departure = input("Enter new departure time (YYYY-MM-DD HH:MM): ").strip()
+            if valid_datetime(departure):
+                break
+            print("  Invalid format, try again.")
+        conn.execute("UPDATE Flight SET departureTime = ? WHERE flightID = ?",
+                     (departure, flight_id))
+
+    # Status input loop
+    elif choice == "2":
+        allowed = ("Scheduled", "Delayed", "Cancelled")
+        while True:
+            status = input("Enter new status (Scheduled / Delayed / Cancelled): ").strip()
+            if status in allowed:
+                break
+            print("  Invalid status, try again.")
+        conn.execute("UPDATE Flight SET status = ? WHERE flightID = ?",
+                     (status, flight_id))
+
+    # Aircraft input loop
+    elif choice == "3":
+        # Print aircraft so the user can see aircraft IDs
+        print("\nAircraft:")
+        for plane in conn.execute("SELECT aircraftID, model FROM Aircraft ORDER BY aircraftID"):
+            print(f"  {plane['aircraftID']}. {plane['model']}")
+
+        aircraft_id = input("Enter new aircraft ID: ").strip()
+        if conn.execute("SELECT 1 FROM Aircraft WHERE aircraftID = ?", (aircraft_id,)).fetchone() is None:
+            print("No aircraft found under that ID.")
+            return
+        conn.execute("UPDATE Flight SET aircraftID = ? WHERE flightID = ?",
+                     (aircraft_id, flight_id))
+
+    else:
+        print("\nInvalid option.")
+        return
+
+    conn.commit()                # Push the change to the database
+    print("\nFlight updated.")
 
 def assign_pilot(conn):
     """Assign a Pilot to a Flight which writes to the FlightCrew junction table."""
