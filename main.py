@@ -1,10 +1,13 @@
 # Flight Management Database - command-line interface
+
+#imports
 import sqlite3
 import os
+from datetime import datetime
 
 DB_FILE = "flights.db"                    # database reference
 
-# --- Helper ---
+# --- Helper Funfctions---
 def clear_screen():
     """Clears the terminal."""
     os.system("clear")
@@ -32,6 +35,14 @@ def print_pilot_schedule(pilot_name, rows):
         print(f"    Departs: {r['departureTime']:<20} | To: {r['city']}")
         print(f"    Status:  {r['status']}")
 
+def valid_datetime(text):
+    """Return True if text matches the 'YYYY-MM-DD HH:MM' format, else False."""
+    try:
+        datetime.strptime(text, "%Y-%m-%d %H:%M")   # try to parse, throws exception if wrong format, otherwise return tru
+        return True
+    except ValueError:                              
+        return False
+
 # --- Connection function ---  
 def connect():
     """Open a connection to the SQLite database and return it."""
@@ -45,7 +56,70 @@ def connect():
 
 def add_flight(conn):
     """Add a New Flight."""
-    print("[add_flight] not implemeted yet")
+
+    clear_screen()
+    print("Add a new flight\n")
+
+    flight_number = input("Enter Flight number (e.g. BA123): ").strip()
+
+    # Interesting challenge worth noting in report
+
+    # Departure time input loop
+    while True:
+        departure = input("Enter Departure time (YYYY-MM-DD HH:MM): ").strip()
+        if valid_datetime(departure):
+            break
+        print("  Invalid format, try again.")
+
+    # Arrival time input loop
+    while True:
+        arrival = input("Enter Arrival time (YYYY-MM-DD HH:MM): ").strip()
+        if valid_datetime(arrival):
+            break
+        print("  Invalid format, try again.")
+
+    # Status input loop
+    allowed = ("Scheduled", "Delayed", "Cancelled")
+    while True:
+        status = input("Enter Status (Scheduled / Delayed / Cancelled): ").strip()
+        if status in allowed:
+            break
+        print("  Invalid status, try again.")
+
+    # Destinations input loop
+    print("\nDestinations:")
+    # Print destinations
+    for location in conn.execute("SELECT destinationID, city FROM Destination ORDER BY destinationID"):
+        dest_id = location['destinationID']
+        city = location['city']
+        print(f"  {dest_id}. {city}")
+    # Input Handling
+    destination_id = input("Enter Destination ID: ").strip()
+    if conn.execute("SELECT 1 FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone() is None:
+        print("No destination with that ID.")
+        return
+
+    # Aircraft input loop
+    print("\nAircraft:")
+    # Print destinations
+    for plane in conn.execute("SELECT aircraftID, model FROM Aircraft ORDER BY aircraftID"):
+        plane_id = plane['aircraftID']
+        model = plane['model']
+        print(f"  {plane_id}. {model}")
+    # Input Handling
+    aircraft_id = input("Aircraft ID: ").strip()
+    if conn.execute("SELECT 1 FROM Aircraft WHERE aircraftID = ?", (aircraft_id,)).fetchone() is None:
+        print("No aircraft with that ID.")
+        return
+
+    # Insert the new flight
+    conn.execute("""
+        INSERT INTO Flight (flightNumber, departureTime, arrivalTime, status, destinationID, aircraftID)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (flight_number, departure, arrival, status, destination_id, aircraft_id))
+
+    conn.commit()                  # push change into database
+    print(f"\nFlight {flight_number} added.")
 
 def view_flights(conn):
     """View Flights based on input parameters (destination, status, date)."""
