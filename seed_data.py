@@ -15,7 +15,7 @@ cur.execute("DELETE FROM Aircraft")
 cur.execute("DELETE FROM Destination")
 cur.execute("DELETE FROM Pilot")
 
-# Pilots
+# --- Pilots --- 
 pilots = [
     ("James", "Carter", "UK10234", "Captain", "2012-03-15"),
     ("Sarah", "Khan", "UK10876", "Captain", "2014-07-22"),
@@ -36,7 +36,7 @@ cur.executemany(
 )
 
 
-# Destinations
+# --- Destinations --- 
 destinations = [
     ("JFK", "John F. Kennedy International", "New York", "USA"),
     ("CDG", "Charles de Gaulle", "Paris", "France"),
@@ -57,7 +57,7 @@ cur.executemany(
 )
 
 
-# Aircraft
+# --- Aircraft --- 
 aircraft = [
     ("G-XLEA", "Airbus A380-800", 469),
     ("G-STBA", "Boeing 777-300ER", 396),
@@ -85,7 +85,7 @@ aircraft_ids = [r[0] for r in aircraft_rows]
 pilot_rows = cur.execute("SELECT pilotID FROM Pilot ORDER BY pilotID").fetchall()
 pilot_ids = [r[0] for r in pilot_rows]
 
-#Flights
+# --- Flights --- 
 flights = [
     ("BA117",  "2026-06-10 08:30", "2026-06-10 11:15", "Scheduled", 0, 1),
     ("BA306",  "2026-06-10 09:00", "2026-06-10 11:20", "Scheduled", 1, 3),
