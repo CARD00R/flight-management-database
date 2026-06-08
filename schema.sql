@@ -37,9 +37,9 @@ CREATE TABLE Flight (
     departureTime   DATETIME,
     arrivalTime     DATETIME,
     status          TEXT,
-    destID          INTEGER NOT NULL,
+    destinationID          INTEGER NOT NULL,
     aircraftID      INTEGER NOT NULL,
-    FOREIGN KEY (destID)     REFERENCES Destination(destinationID),
+    FOREIGN KEY (destinationID)     REFERENCES Destination(destinationID),
     FOREIGN KEY (aircraftID) REFERENCES Aircraft(aircraftID)
 );
 

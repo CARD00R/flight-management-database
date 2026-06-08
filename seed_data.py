@@ -102,7 +102,7 @@ flights = [
 ]
 for fn, dep, arr, status, di, ai in flights:
     cur.execute(
-        "INSERT INTO Flight (flightNumber, departureTime, arrivalTime, status, destID, aircraftID) "
+        "INSERT INTO Flight (flightNumber, departureTime, arrivalTime, status, destinationID, aircraftID) "
         "VALUES (?, ?, ?, ?, ?, ?)",
         (fn, dep, arr, status, dest_ids[di], aircraft_ids[ai])
     )
