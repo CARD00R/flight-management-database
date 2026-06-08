@@ -296,7 +296,7 @@ def assign_pilot(conn):
     clear_screen()
     print("Assign a pilot to a flight\n")
 
-    # Note: Wasn't sure about ordering: flight first, then pilot. Or pilot first, then flight. Justif decision in report.
+    # Note: Wasn't sure about ordering: flight first, then pilot. Or pilot first, then flight. Justify decision in report.
 
     # List ALL flights with IDs
     flights = conn.execute("""
