@@ -19,6 +19,18 @@ def print_flights(rows):
         print(f"  Departs: {r['departureTime']:<20} | Aircraft: {r['model']}") # pad to 20 characters wide to the right (left-aligned)
         print(f"  Arrives: {r['arrivalTime']:<20} | To: {r['city']}")          # pad to 20 characters wide to the right (left-aligned)
 
+def print_pilot_schedule(pilot_name, rows):
+    """Print the flights a pilot is assigned to. Handles the empty case."""
+    clear_screen()
+
+    if not rows:
+        print(f"\n{pilot_name} has no assigned flights.")
+        return
+    print(f"\nSchedule for {pilot_name}:")
+    for r in rows:
+        print(f"\n  {r['flightNumber']} | Role: {r['role']}")
+        print(f"    Departs: {r['departureTime']:<20} | To: {r['city']}")
+        print(f"    Status:  {r['status']}")
 
 # --- Connection function ---  
 def connect():
@@ -48,6 +60,7 @@ def view_flights(conn):
     print("  4. Show ALL flights")
     choice = input("\nSelect an option: ").strip()
 
+    # Interesting challenge worth noting in report
     # Join Destination and Aircraft to Flight to get access to city and model (instead of ID numbers)
     # Select columns flightNumber, departureTime, arrivalTime, status, city, model
     baseQuery = """
@@ -95,7 +108,53 @@ def assign_pilot(conn):
 
 def view_pilot_schedule(conn):
     """View the flights the given pilot is assigned to."""
-    print("[view_pilot_schedule] not implemeted yet")
+
+    clear_screen()
+
+    # List all pilots so user can view IDs
+    pilots = conn.execute(
+        "SELECT pilotID, firstName, lastName FROM Pilot ORDER BY pilotID"
+    ).fetchall()
+    print("Pilots:")
+    for pilot in pilots:
+        print(f"  {pilot['pilotID']}. {pilot['firstName']} {pilot['lastName']}")
+
+    pilot_id = input("\nEnter pilot ID: ").strip()
+
+    # Check requested pilot ID exists
+    pilot = conn.execute(
+        "SELECT firstName, lastName FROM Pilot WHERE pilotID = ?",
+        (pilot_id,)
+    ).fetchone()
+    if pilot is None:                       # no row returned = no pilot found
+        print(f"\nNo pilot found under ID: {pilot_id}.")
+        return
+    
+
+    # Interesting challenge worth noting in report
+    # Find every flight the pilot crews by following their relationships:
+    # Pilot links to FlightCrew (the junction table holding each pilot's flights and role), 
+    # FlightCrew links to Flight (via flightID), and Flight links to Destination (via destinationID) 
+    # and is joined so we can show the city, not just its ID.
+    query = """
+        SELECT flightNumber, role, departureTime, status, city,
+               firstName, lastName
+        FROM Pilot
+        JOIN FlightCrew  ON Pilot.pilotID        = FlightCrew.pilotID
+        JOIN Flight      ON FlightCrew.flightID  = Flight.flightID
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        WHERE Pilot.pilotID = ?
+        ORDER BY departureTime
+    """
+    rows = conn.execute(query, (pilot_id,)).fetchall()
+
+    # Build the pilot's name for the heading (from the first row, or fall back).
+    if rows:
+        name = f"{rows[0]['firstName']} {rows[0]['lastName']}"
+    else:
+        name = f"Pilot {pilot_id}"
+
+    print_pilot_schedule(name, rows)
 
 def manage_destination(conn):
     """View or update Destination information."""
