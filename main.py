@@ -291,8 +291,62 @@ def update_flight(conn):
     print("\nFlight updated.")
 
 def assign_pilot(conn):
-    """Assign a Pilot to a Flight which writes to the FlightCrew junction table."""
-    print("[assign_pilot] not implemeted yet")
+    """Assign a Pilot to a Flight by writing to the FlightCrew junction table."""
+
+    clear_screen()
+    print("Assign a pilot to a flight\n")
+
+    # Note: Wasn't sure about ordering: flight first, then pilot. Or pilot first, then flight. Justif decision in report.
+
+    # List ALL flights with IDs
+    flights = conn.execute("""
+        SELECT flightID, flightNumber, departureTime, status, city
+        FROM Flight
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        ORDER BY flightID
+    """).fetchall()
+    for flight in flights:
+        print(f"  {flight['flightID']}. {flight['flightNumber']} | {flight['departureTime']} | To: {flight['city']} | {flight['status']}")
+
+    # Ask which flight to assign the unspecified pilot to
+    flight_id = input("\nEnter the flight ID: ").strip()
+    if conn.execute("SELECT 1 FROM Flight WHERE flightID = ?", (flight_id,)).fetchone() is None:
+        print("No flight found under that ID.")
+        return
+
+    # List ALL pilots with IDs
+    print("\nPilots:")
+    pilots = conn.execute(
+        "SELECT pilotID, firstName, lastName, rank FROM Pilot ORDER BY pilotID"
+    ).fetchall()
+    for pilot in pilots:
+        print(f"  {pilot['pilotID']}. {pilot['firstName']} {pilot['lastName']} ({pilot['rank']})")
+
+    # Pick the pilot
+    pilot_id = input("\nEnter the pilot ID: ").strip()
+    if conn.execute("SELECT 1 FROM Pilot WHERE pilotID = ?", (pilot_id,)).fetchone() is None:
+        print("No pilot found under that ID.")
+        return
+
+    # Pick the role
+    allowed = ("Captain", "First Officer")
+    while True:
+        role = input("Enter role (Captain / First Officer): ").strip()
+        if role in allowed:
+            break
+        print("  Invalid role, try again.")
+
+    # Try to insert specified Pilot (PilotID, FlightID and role) into FlightCrew 
+    # Compoisite primary key (flightID, pilotID) stops any duplication errors as it returns an integrity error
+    try:
+        conn.execute(
+            "INSERT INTO FlightCrew (flightID, pilotID, role) VALUES (?, ?, ?)",
+            (flight_id, pilot_id, role)
+        )
+        conn.commit()
+        print("\nPilot assigned to flight.")
+    except sqlite3.IntegrityError:
+        print("\nThat pilot is already assigned to this flight.")
 
 def view_pilot_schedule(conn):
     """View the flights the given pilot is assigned to."""
