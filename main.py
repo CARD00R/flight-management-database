@@ -218,9 +218,11 @@ def update_flight(conn):
     # Update Flight: Sub-menu
     print("\nWhat would you like to update?")
     print("  1. Departure time")
-    print("  2. Status")
-    print("  3. Aircraft")
-    choice = input("\nSelect an option (1-3): ").strip()
+    print("  2. Arrival time")
+    print("  3. Status")
+    print("  4. Destination")
+    print("  5. Aircraft")
+    choice = input("\nSelect an option (1-5): ").strip()
 
     # Departure-time input loop
     if choice == "1":
@@ -231,9 +233,19 @@ def update_flight(conn):
             print("  Invalid format, try again.")
         conn.execute("UPDATE Flight SET departureTime = ? WHERE flightID = ?",
                      (departure, flight_id))
+    
+    # Arrival-time input loop
+    elif choice == "2":
+        while True:
+            arrival = input("Enter new arrival time (YYYY-MM-DD HH:MM): ").strip()
+            if valid_datetime(arrival):
+                break
+            print("  Invalid format, try again.")
+        conn.execute("UPDATE Flight SET arrivalTime = ? WHERE flightID = ?",
+                     (arrival, flight_id))
 
     # Status input loop
-    elif choice == "2":
+    elif choice == "3":
         allowed = ("Scheduled", "Delayed", "Cancelled")
         while True:
             status = input("Enter new status (Scheduled / Delayed / Cancelled): ").strip()
@@ -242,10 +254,24 @@ def update_flight(conn):
             print("  Invalid status, try again.")
         conn.execute("UPDATE Flight SET status = ? WHERE flightID = ?",
                      (status, flight_id))
+        
+    # Destination input loop
+    elif choice == "4":
+        # Print destinations with IDs
+        print("\nDestinations:")
+        for location in conn.execute("SELECT destinationID, city FROM Destination ORDER BY destinationID"):
+            print(f"  {location['destinationID']}. {location['city']}")
+
+        destination_id = input("Enter new destination ID: ").strip()
+        if conn.execute("SELECT 1 FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone() is None:
+            print("No destination found under that ID.")
+            return
+        conn.execute("UPDATE Flight SET destinationID = ? WHERE flightID = ?",
+                     (destination_id, flight_id))
 
     # Aircraft input loop
-    elif choice == "3":
-        # Print aircraft so the user can see aircraft IDs
+    elif choice == "5":
+        # Print aircrafts with IDs
         print("\nAircraft:")
         for plane in conn.execute("SELECT aircraftID, model FROM Aircraft ORDER BY aircraftID"):
             print(f"  {plane['aircraftID']}. {plane['model']}")
