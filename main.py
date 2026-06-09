@@ -436,7 +436,7 @@ def view_pilot_schedule(conn):
         name = f"{rows[0]['firstName']} {rows[0]['lastName']}"
     else:
         name = f"Pilot {pilot_id}"
-        
+
     print_pilot_schedule(name, rows)
 
 def manage_destination(conn):
@@ -445,7 +445,7 @@ def manage_destination(conn):
     clear_screen()
     print("Destination information\n")
 
-    # List ALL destinations 
+    # List and Print ALL destinations 
     destinations = conn.execute(
         "SELECT destinationID, airportCode, airportName, city, country "
         "FROM Destination ORDER BY destinationID"
@@ -493,7 +493,7 @@ def manage_destination(conn):
                 break
             print("  Value cannot be empty, try again.")
         conn.execute("UPDATE Destination SET airportName = ? WHERE destinationID = ?",
-                     (airport_name, destination_id))
+                     (airport_name, destination_id)) # Update this destination's airport field
 
     # Update City loop
     elif choice == "2":
@@ -503,7 +503,7 @@ def manage_destination(conn):
                 break
             print("  Value cannot be empty, try again.")
         conn.execute("UPDATE Destination SET city = ? WHERE destinationID = ?",
-                     (city, destination_id))
+                     (city, destination_id)) # Update this destination's city field
 
     # Update Country loop
     elif choice == "3":
@@ -513,7 +513,7 @@ def manage_destination(conn):
                 break
             print("  Value cannot be empty, try again.")
         conn.execute("UPDATE Destination SET country = ? WHERE destinationID = ?",
-                     (country, destination_id))
+                     (country, destination_id)) # Update this destination's country field
 
     else:
         print("\nInvalid option.")
@@ -529,8 +529,8 @@ def view_summaries(conn):
     print("Summary reports\n")
 
     # Summarise number of flights to each destination:
-    # COUNT(*) counts the flights in each group
-    # GROUP BY collapses the flight rows into one row PER destination.
+    # Group the flight rows into one group PER destination.
+    # Then Count the flights within each group.
     print("Flights per destination:\n")
     per_destination = conn.execute("""
         SELECT city, COUNT(*) AS flight_count
@@ -543,9 +543,9 @@ def view_summaries(conn):
         print(f"  {row['city']}: {row['flight_count']}")
 
     # Summarise number of flights assigned to each pilot:
-    # COUNT(*) counts the assignments for each pilot
-    # GROUP BY collapses the FlightCrew rows into one row PER pilot
-    # Warning: Inner JOIN means pilots with zero assignments do not appear
+    # Count the assignments for each pilot
+    # GROUP the FlightCrew rows into one row PER pilot
+    # !Warning! Inner JOIN means pilots with zero assignments do not appear
     print("\nFlights per pilot:\n")
     per_pilot = conn.execute("""
         SELECT firstName, lastName, COUNT(*) AS flight_count
