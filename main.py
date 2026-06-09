@@ -309,7 +309,7 @@ def delete_flight(conn):
         JOIN Destination ON Flight.destinationID = Destination.destinationID
         ORDER BY flightID
     """).fetchall()
-    
+
     for flight in flights:
         print(f"  {flight['flightID']}. {flight['flightNumber']} | {flight['departureTime']} | To: {flight['city']} | {flight['status']}")
 
@@ -338,7 +338,7 @@ def assign_pilot(conn):
     clear_screen()
     print("Assign a pilot to a flight\n")
 
-    # Note: Wasn't sure about ordering: flight first, then pilot. Or pilot first, then flight. Justify decision in report.
+    # Note: Ordering! Flight first, then pilot.
 
     # List ALL flights with IDs
     flights = conn.execute("""
@@ -378,8 +378,8 @@ def assign_pilot(conn):
             break
         print("  Invalid role, try again.")
 
-    # Try to insert specified Pilot (PilotID, FlightID and role) into FlightCrew 
-    # Compoisite primary key (flightID, pilotID) stops any duplication errors as it returns an integrity error
+    # Try insert specified Pilot (PilotID, FlightID and role) into FlightCrew 
+    # Composite primary key (flightID, pilotID) which stops any duplication errors by returning an integrity error
     try:
         conn.execute(
             "INSERT INTO FlightCrew (flightID, pilotID, role) VALUES (?, ?, ?)",
