@@ -482,8 +482,39 @@ def manage_destination(conn):
     print("\nDestination updated.")
 
 def view_summaries(conn):
-    """Aggregate reports (flights per destination, flights per pilot)."""
-    print("[view_summaries] not implemeted yet")
+    """Show summary reports: number of flights per destination and per pilot."""
+
+    clear_screen()
+    print("Summary reports\n")
+
+    # Summarise number of flights to each destination:
+    # COUNT(*) counts the flights in each group
+    # GROUP BY collapses the flight rows into one row PER destination.
+    print("Flights per destination:\n")
+    per_destination = conn.execute("""
+        SELECT city, COUNT(*) AS flight_count
+        FROM Flight
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        GROUP BY Destination.destinationID
+        ORDER BY flight_count DESC
+    """).fetchall()
+    for row in per_destination:
+        print(f"  {row['city']}: {row['flight_count']}")
+
+    # Summarise number of flights assigned to each pilot:
+    # COUNT(*) counts the assignments for each pilot
+    # GROUP BY collapses the FlightCrew rows into one row PER pilot
+    # Warning: Inner JOIN means pilots with zero assignments do not appear
+    print("\nFlights per pilot:\n")
+    per_pilot = conn.execute("""
+        SELECT firstName, lastName, COUNT(*) AS flight_count
+        FROM FlightCrew
+        JOIN Pilot ON FlightCrew.pilotID = Pilot.pilotID
+        GROUP BY Pilot.pilotID
+        ORDER BY flight_count DESC
+    """).fetchall()
+    for row in per_pilot:
+        print(f"  {row['firstName']} {row['lastName']}: {row['flight_count']}")
 
 # --- Menu Definitions --- 
 
