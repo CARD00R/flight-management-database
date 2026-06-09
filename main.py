@@ -298,17 +298,18 @@ def update_flight(conn):
 
 def delete_flight(conn):
     """Delete a flight and its crew assignments."""
-
     clear_screen()
     print("Delete a flight\n")
 
     # List ALL flights with IDs
+    # JOIN Destination for 'city' so flights show the city, not its destinationID and ordered by flightID
     flights = conn.execute("""
         SELECT flightID, flightNumber, departureTime, status, city
         FROM Flight
         JOIN Destination ON Flight.destinationID = Destination.destinationID
         ORDER BY flightID
     """).fetchall()
+    
     for flight in flights:
         print(f"  {flight['flightID']}. {flight['flightNumber']} | {flight['departureTime']} | To: {flight['city']} | {flight['status']}")
 
