@@ -403,6 +403,7 @@ def view_pilot_schedule(conn):
     for pilot in pilots:
         print(f"  {pilot['pilotID']}. {pilot['firstName']} {pilot['lastName']}")
 
+    # Input Handling
     pilot_id = input("\nEnter pilot ID: ").strip()
 
     # Check requested pilot ID exists
@@ -414,12 +415,10 @@ def view_pilot_schedule(conn):
         print(f"\nNo pilot found under ID: {pilot_id}.")
         return
     
-
-    # Interesting challenge worth noting in report
     # Find every flight the pilot crews by following their relationships:
     # Pilot links to FlightCrew (the junction table holding each pilot's flights and role), 
     # FlightCrew links to Flight (via flightID), and Flight links to Destination (via destinationID) 
-    # and is joined so we can show the city, not just its ID.
+    # and is joined so we can show the city, not just its destinatioID.
     query = """
         SELECT flightNumber, role, departureTime, status, city,
                firstName, lastName
@@ -432,12 +431,12 @@ def view_pilot_schedule(conn):
     """
     rows = conn.execute(query, (pilot_id,)).fetchall()
 
-    # Build the pilot's name for the heading (from the first row, or fall back).
+    # Build and Print the pilot's name for the heading
     if rows:
         name = f"{rows[0]['firstName']} {rows[0]['lastName']}"
     else:
         name = f"Pilot {pilot_id}"
-
+        
     print_pilot_schedule(name, rows)
 
 def manage_destination(conn):
