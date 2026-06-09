@@ -13,26 +13,26 @@ def clear_screen():
     os.system("clear")
 
 def print_flights(rows):
-    """Print flight rows in a readable format. Handles the empty case."""
+    """Print flight rows. Handles the empty case."""
     if not rows:
-        print("\nNo flights found.") # error catching
+        print("\nNo flights found.") # Handle no matching flights
         return
     for r in rows:
         print(f"\n{r['flightNumber']} | {r['status']}")
-        print(f"  Departs: {r['departureTime']:<20} | Aircraft: {r['model']}") # pad to 20 characters wide to the right (left-aligned)
-        print(f"  Arrives: {r['arrivalTime']:<20} | To: {r['city']}")          # pad to 20 characters wide to the right (left-aligned)
+        print(f"  Departs: {r['departureTime']:<20} | Aircraft: {r['model']}") # Pad to 20 characters wide to the right (left-aligned)
+        print(f"  Arrives: {r['arrivalTime']:<20} | To: {r['city']}")          # Pad to 20 characters wide to the right (left-aligned)
 
 def print_pilot_schedule(pilot_name, rows):
-    """Print the flights a pilot is assigned to. Handles the empty case."""
+    """Print the flights a specific pilot is assigned to. Handles the empty case."""
     clear_screen()
 
     if not rows:
-        print(f"\n{pilot_name} has no assigned flights.")
+        print(f"\n{pilot_name} has no assigned flights.") # Handle pilot with no assigned flights
         return
     print(f"\nSchedule for {pilot_name}:")
     for r in rows:
         print(f"\n  {r['flightNumber']} | Role: {r['role']}")
-        print(f"    Departs: {r['departureTime']:<20} | To: {r['city']}")
+        print(f"    Departs: {r['departureTime']:<20} | To: {r['city']}") # Pad to 20 characters wide to the right (left-aligned)
         print(f"    Status:  {r['status']}")
 
 def valid_datetime(text):
@@ -45,10 +45,10 @@ def valid_datetime(text):
 
 # --- Connection function ---  
 def connect():
-    """Open a connection to the SQLite database and return it."""
+    """Open a connection to the SQL database and return it."""
     conn = sqlite3.connect(DB_FILE)        
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.row_factory = sqlite3.Row         # allows columns to be read by their name
+    conn.row_factory = sqlite3.Row         # allows columns to be read by their column name
     return conn
 
 
