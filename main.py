@@ -99,7 +99,7 @@ def add_flight(conn):
 
     # Aircraft input loop
     print("\nAircraft:")
-    # Print destinations
+    # Print aircrafts
     for plane in conn.execute("SELECT aircraftID, model FROM Aircraft ORDER BY aircraftID"):
         plane_id = plane['aircraftID']
         model = plane['model']
@@ -272,7 +272,7 @@ def update_flight(conn):
             print("No destination found under that ID.")
             return
         conn.execute("UPDATE Flight SET destinationID = ? WHERE flightID = ?",
-                     (destination_id, flight_id)) # Update flight's City WHERE flightID = ? targets the single row
+                     (destination_id, flight_id)) # Update flight's destination WHERE flightID = ? targets the single row
 
     # Aircraft input loop
     elif choice == "5":
@@ -576,18 +576,18 @@ def print_banner():
     """Display the menu banner to  user."""
     
     #ASCII Art
-    print("                  |            ")
-    print("              ___/'\___        ")
-    print("  .   __________/ o \__________")
-    print("__|__    *   *  \___/  *   *   ")
-    print("\___/ ")
-    print(" | |   Flight Management System")
-    print(" | |")
-    print("_|_|_____________________________")
-    print("              /   |   \ ")
-    print("            */    |    \*")
-    print("            /     |     \ ")
-    print("          */      |      \* ")
+    print(r"                  |            ")
+    print(r"              ___/'\___        ")
+    print(r"  .   __________/ o \__________")
+    print(r"__|__    *   *  \___/  *   *   ")
+    print(r"\___/ ")
+    print(r" | |   Flight Management System")
+    print(r" | |")
+    print(r"_|_|_____________________________")
+    print(r"              /   |   \ ")
+    print(r"            */    |    \*")
+    print(r"            /     |     \ ")
+    print(r"          */      |      \* ")
 
 def print_menu():
     """Display the menu options to user."""
