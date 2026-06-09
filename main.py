@@ -290,6 +290,41 @@ def update_flight(conn):
     conn.commit()                # Push the change to the database
     print("\nFlight updated.")
 
+def delete_flight(conn):
+    """Delete a flight and its crew assignments."""
+
+    clear_screen()
+    print("Delete a flight\n")
+
+    # List ALL flights with IDs
+    flights = conn.execute("""
+        SELECT flightID, flightNumber, departureTime, status, city
+        FROM Flight
+        JOIN Destination ON Flight.destinationID = Destination.destinationID
+        ORDER BY flightID
+    """).fetchall()
+    for flight in flights:
+        print(f"  {flight['flightID']}. {flight['flightNumber']} | {flight['departureTime']} | To: {flight['city']} | {flight['status']}")
+
+    # Specify flight to delete
+    flight_id = input("\nEnter the flight ID to delete: ").strip()
+    if conn.execute("SELECT 1 FROM Flight WHERE flightID = ?", (flight_id,)).fetchone() is None:
+        print("No flight found under that ID.")
+        return
+
+    # Confirm deletion
+    confirm = input("Are you sure? (y/n): ").strip().lower()
+    if confirm != "y":
+        print("\nDeletion cancelled.")
+        return
+
+    # Remove crew assignments, then flight (FlightCrew rows reference flight so flightcrew rows must be deleted first)
+    conn.execute("DELETE FROM FlightCrew WHERE flightID = ?", (flight_id,))
+    conn.execute("DELETE FROM Flight WHERE flightID = ?", (flight_id,))
+
+    conn.commit()
+    print("\nFlight deleted.")
+
 def assign_pilot(conn):
     """Assign a Pilot to a Flight by writing to the FlightCrew junction table."""
 
@@ -518,20 +553,21 @@ def view_summaries(conn):
 
 # --- Menu Definitions --- 
 
-# Menu Struct
+# Menu Dictionary
 MENU = {
-#   key: label String,                     function object     
+#   Key: Label String,                     Function object     
     "1": ("Add a New Flight",              add_flight),
     "2": ("View Flights by Criteria",      view_flights),
     "3": ("Update Flight Information",     update_flight),
-    "4": ("Assign Pilot to Flight",        assign_pilot),
-    "5": ("View Pilot Schedule",           view_pilot_schedule),
-    "6": ("View / Update Destination",     manage_destination),
-    "7": ("View Summary Reports",          view_summaries),
+    "4": ("Delete a Flight",               delete_flight),
+    "5": ("Assign Pilot to Flight",        assign_pilot),
+    "6": ("View Pilot Schedule",           view_pilot_schedule),
+    "7": ("View / Update Destination",     manage_destination),
+    "8": ("View Summary Reports",          view_summaries),
 }
 
 def print_banner():
-    """Display the manu banner to  user."""
+    """Display the menu banner to  user."""
     
     #ASCII Art
     print("                  |            ")
@@ -552,8 +588,8 @@ def print_menu():
     clear_screen()
     print_banner()
     print("\n")
-    for key in MENU:                      # iterate through keys 1,2,3...
-        label = MENU[key][0]              # label = first item of (label string, function) tuple
+    for key in MENU:                      # Iterate through menu dictionary keys
+        label = MENU[key][0]              # Label = first item of (label string, function) tuple
         print(f"  {key}. {label}")
     print("  0. Exit")
 
@@ -563,24 +599,24 @@ def main():
 
     while True:                       
         print_menu()
-        choice = input("\nSelect an option: ").strip()   # read input and remove leading and trailing spaces
+        choice = input("\nSelect an option: ").strip()   # Read input and remove leading and trailing spaces
 
-        if choice == "0":             # exit case
-            print("Goodbye.")
+        if choice == "0":             # Exit case
+            print("Closing.")
             break                     
 
-        action = MENU.get(choice)     # look up the inputed number (choice), returns None if invalid
+        action = MENU.get(choice)     # Look up the inputed number (choice), returns None if invalid
         if action is None:            # Error: User inputed invalid number
             input("\nInvalid option. Press Enter to try again...")
             continue                  
 
-        func = action[1]              # get function (2nd item of [label, function] tuple)
-        func(conn)                    # call matching menu option, passing the stored connection
-        input("\nPress Enter to return to the menu...")   # pause so output stays readable
+        func = action[1]              # Get function (2nd item of [label, function] tuple)
+        func(conn)                    # Call matching menu option, passing the stored connection
+        input("\nPress Enter to return to the menu...")   # Pause so output stays readable
  
-    conn.close()   # close  database connection
+    conn.close()   # Close   connection
 
-if __name__ == "__main__": # Run main() only when file is executed directly (not when imported)
+if __name__ == "__main__": # Run main() only when file is executed directly (as opposed to imported)
     main()
 
     
