@@ -399,8 +399,87 @@ def view_pilot_schedule(conn):
     print_pilot_schedule(name, rows)
 
 def manage_destination(conn):
-    """View or update Destination information."""
-    print("[manage_destination] not implemeted yet")
+    """View all destinations and update a destination's name, city, or country."""
+
+    clear_screen()
+    print("Destination information\n")
+
+    # List ALL destinations 
+    destinations = conn.execute(
+        "SELECT destinationID, airportCode, airportName, city, country "
+        "FROM Destination ORDER BY destinationID"
+    ).fetchall()
+    for destination in destinations:
+        print(f"  {destination['destinationID']}. {destination['airportCode']} - {destination['airportName']}")
+        print(f"     {destination['city']}, {destination['country']}")
+
+    # User Input choice
+    print("\n  1. Update a destination")
+    print("   2. Return to menu")
+    choice = input("\nSelect an option (1-2): ").strip()
+    if choice != "1":
+        return
+
+    # Get desired destination to update
+    destination_id = input("\nEnter the destination ID to update: ").strip()
+    match = conn.execute("SELECT 1 FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone()
+    if match is None:
+        print("No destination found under that ID.")
+        return
+
+    # Print the selected destination's details
+    clear_screen()
+    selected = conn.execute(
+        "SELECT destinationID, airportCode, airportName, city, country "
+        "FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone()
+    
+    print("Selected destination:\n")
+    print(f"{selected['destinationID']}. {selected['airportCode']} - {selected['airportName']}")
+    print(f"   {selected['city']}, {selected['country']}")
+
+    # Choose which field to update
+    print("\nWhat would you like to update?")
+    print("  1. Airport name")
+    print("  2. City")
+    print("  3. Country")
+    choice = input("\nSelect an option (1-3): ").strip()
+
+    # Update Airport name loop
+    if choice == "1":
+        while True:
+            airport_name = input("Enter new airport name: ").strip()
+            if airport_name:
+                break
+            print("  Value cannot be empty, try again.")
+        conn.execute("UPDATE Destination SET airportName = ? WHERE destinationID = ?",
+                     (airport_name, destination_id))
+
+    # Update City loop
+    elif choice == "2":
+        while True:
+            city = input("Enter new city: ").strip()
+            if city:
+                break
+            print("  Value cannot be empty, try again.")
+        conn.execute("UPDATE Destination SET city = ? WHERE destinationID = ?",
+                     (city, destination_id))
+
+    # Update Country loop
+    elif choice == "3":
+        while True:
+            country = input("Enter new country: ").strip()
+            if country:
+                break
+            print("  Value cannot be empty, try again.")
+        conn.execute("UPDATE Destination SET country = ? WHERE destinationID = ?",
+                     (country, destination_id))
+
+    else:
+        print("\nInvalid option.")
+        return
+
+    conn.commit()
+    print("\nDestination updated.")
 
 def view_summaries(conn):
     """Aggregate reports (flights per destination, flights per pilot)."""
