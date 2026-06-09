@@ -62,41 +62,39 @@ def add_flight(conn):
 
     flight_number = input("Enter Flight number (e.g. BA123): ").strip()
 
-    # Interesting challenge worth noting in report
-
     # Departure time input loop
     while True:
         departure = input("Enter Departure time (YYYY-MM-DD HH:MM): ").strip()
         if valid_datetime(departure):
             break
-        print("  Invalid format, try again.")
+        print("  Invalid format, try again.") # Handles invalid input
 
     # Arrival time input loop
     while True:
         arrival = input("Enter Arrival time (YYYY-MM-DD HH:MM): ").strip()
         if valid_datetime(arrival):
             break
-        print("  Invalid format, try again.")
+        print("  Invalid format, try again.") # Handles invalid input
 
     # Status input loop
-    allowed = ("Scheduled", "Delayed", "Cancelled")
+    allowedStatuses = ("Scheduled", "Delayed", "Cancelled")
     while True:
         status = input("Enter Status (Scheduled / Delayed / Cancelled): ").strip()
-        if status in allowed:
+        if status in allowedStatuses:
             break
-        print("  Invalid status, try again.")
+        print("  Invalid status, try again.") # Handles invalid input
 
     # Destinations input loop
     print("\nDestinations:")
-    # Print destinations
+    # List destinations
     for location in conn.execute("SELECT destinationID, city FROM Destination ORDER BY destinationID"):
         dest_id = location['destinationID']
         city = location['city']
         print(f"  {dest_id}. {city}")
-    # Input Handling
+    # User Input Handling
     destination_id = input("Enter Destination ID: ").strip()
-    if conn.execute("SELECT 1 FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone() is None:
-        print("No destination with that ID.")
+    if conn.execute("SELECT 1 FROM Destination WHERE destinationID = ?", (destination_id,)).fetchone() is None: # Existence Check
+        print("No destination with that ID.") 
         return
 
     # Aircraft input loop
@@ -108,11 +106,11 @@ def add_flight(conn):
         print(f"  {plane_id}. {model}")
     # Input Handling
     aircraft_id = input("Aircraft ID: ").strip()
-    if conn.execute("SELECT 1 FROM Aircraft WHERE aircraftID = ?", (aircraft_id,)).fetchone() is None:
+    if conn.execute("SELECT 1 FROM Aircraft WHERE aircraftID = ?", (aircraft_id,)).fetchone() is None: # Existence Check
         print("No aircraft with that ID.")
         return
 
-    # Insert the new flight
+    # Insert the new flight using user specified parameters
     conn.execute("""
         INSERT INTO Flight (flightNumber, departureTime, arrivalTime, status, destinationID, aircraftID)
         VALUES (?, ?, ?, ?, ?, ?)
