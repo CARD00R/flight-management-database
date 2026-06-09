@@ -134,9 +134,9 @@ def view_flights(conn):
     print("  4. Show ALL flights")
     choice = input("\nSelect an option: ").strip()
 
-    # Interesting challenge worth noting in report
-    # Join Destination and Aircraft to Flight to get access to city and model (instead of ID numbers)
-    # Select columns flightNumber, departureTime, arrivalTime, status, city, model
+    # BaseQuery is shared by all filters
+    # JOIN Destination for 'city' and Aircraft for 'model' FROM Flight,
+    # so flights show names instead of raw foreign-key IDs.
     baseQuery = """
         SELECT flightNumber, departureTime, arrivalTime, status, city, model
         FROM Flight
@@ -145,7 +145,7 @@ def view_flights(conn):
     """
 
     # Update each query depending on user's choice.
-    # Using a parameterised query to prevent SQL injection (safety reasons)
+    # Using a parameterised query to prevent SQL injection (security reasons)
     if choice == "1":
         city = input("Enter destination city: ").strip()
         newQuery = baseQuery + " WHERE city = ? ORDER BY departureTime"
@@ -158,7 +158,7 @@ def view_flights(conn):
 
     elif choice == "3":
         date = input("Enter departure date (e.g. 2026, 2026-06, or 2026-06-13): ").strip()
-        # departureTime is stored as "YYYY-MM-DD HH:MM", LIKE with "%" (wild card) matches the date prefix and ignores the time
+        # DepartureTime is stored as "YYYY-MM-DD HH:MM", LIKE with "%" (wild card) matches the date prefix and ignores the time
         newQuery = baseQuery + " WHERE departureTime LIKE ? ORDER BY departureTime"
         rows = conn.execute(newQuery, (date + "%",)).fetchall()
 
@@ -168,7 +168,7 @@ def view_flights(conn):
 
     else:
         print("\nInvalid option.")
-        return                          # leave the function, back to main menu
+        return                          # leave the function, go back to main menu
 
     print_flights(rows)
 
