@@ -32,5 +32,4 @@ can be skipped if you only want to run the application.
 - `schema.sql` — database schema (table definitions, keys, constraints)
 - `seed_data.py` — populates the database with sample data
 - `main.py` — the command-line application
-- `test_setup.py` — a small script that verifies key constraints
 - `flights.db` — pre-built SQLite database
